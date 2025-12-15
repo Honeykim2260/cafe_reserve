@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고양이 댄스 파티 🎵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f7b731);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 4em;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            animation: bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dance-floor {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin: 50px auto;
+            max-width: 1200px;
+        }
+
+        .dancing-cat {
+            font-size: 120px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.3));
+            position: relative;
+        }
+
+        .dancing-cat:hover {
+            transform: scale(1.2);
+        }
+
+        .cat1 {
+            animation: dance1 1s ease-in-out infinite;
+        }
+
+        .cat2 {
+            animation: dance2 1.2s ease-in-out infinite;
+        }
+
+        .cat3 {
+            animation: dance3 0.8s ease-in-out infinite;
+        }
+
+        .cat4 {
+            animation: dance4 1.5s ease-in-out infinite;
+        }
+
+        .cat5 {
+            animation: dance5 1.1s ease-in-out infinite;
+        }
+
+        .cat6 {
+            animation: dance6 0.9s ease-in-out infinite;
+        }
+
+        @keyframes dance1 {
+            0%, 100% { transform: rotate(-10deg) translateY(0); }
+            50% { transform: rotate(10deg) translateY(-30px); }
+        }
+
+        @keyframes dance2 {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-15deg) scale(1.1); }
+            75% { transform: rotate(15deg) scale(0.9); }
+        }
+
+        @keyframes dance3 {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-20px) rotate(-20deg); }
+            75% { transform: translateX(20px) rotate(20deg); }
+        }
+
+        @keyframes dance4 {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-40px) scaleY(1.2); }
+        }
+
+        @keyframes dance5 {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg) translateY(-20px); }
+            50% { transform: rotate(-20deg) translateY(-40px); }
+            75% { transform: rotate(10deg) translateY(-20px); }
+        }
+
+        @keyframes dance6 {
+            0%, 100% { transform: skew(0deg) translateY(0); }
+            33% { transform: skew(10deg) translateY(-25px); }
+            66% { transform: skew(-10deg) translateY(-15px); }
+        }
+
+        .controls {
+            margin: 40px 0;
+        }
+
+        .btn {
+            background: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+        }
+
+        .music-note {
+            position: fixed;
+            font-size: 30px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-500px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .disco-ball {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #fff, #ccc);
+            border-radius: 50%;
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 40px rgba(255,255,255,0.8),
+                        inset 0 0 20px rgba(0,0,0,0.3);
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        .speed-info {
+            color: white;
+            font-size: 1.2em;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .cat-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6b6b;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        .paused .dancing-cat {
+            animation-play-state: paused;
+        }
+
+        .party-lights {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .light {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: lightPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes lightPulse {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .light:nth-child(1) { top: 10%; left: 10%; background: #ff6b6b; animation-delay: 0s; }
+        .light:nth-child(2) { top: 20%; right: 15%; background: #4ecdc4; animation-delay: 0.5s; }
+        .light:nth-child(3) { bottom: 15%; left: 20%; background: #f7b731; animation-delay: 1s; }
+        .light:nth-child(4) { bottom: 10%; right: 10%; background: #45b7d1; animation-delay: 1.5s; }
+    </style>
+</head>
+<body>
+    <div class="party-lights">
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+    </div>
+
+    <div class="disco-ball"></div>
+
+    <div class="container" id="container">
+        <h1>🎵 고양이 댄스 파티! 🎵</h1>
+        <p class="subtitle">신나게 춤추는 고양이들을 클릭해보세요!</p>
+
+        <div class="dance-floor">
+            <div class="dancing-cat cat1" onclick="meow(this)">😺</div>
+            <div class="dancing-cat cat2" onclick="meow(this)">😸</div>
+            <div class="dancing-cat cat3" onclick="meow(this)">😻</div>
+            <div class="dancing-cat cat4" onclick="meow(this)">😹</div>
+            <div class="dancing-cat cat5" onclick="meow(this)">😽</div>
+            <div class="dancing-cat cat6" onclick="meow(this)">🐱</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="toggleDance()">⏯️ 멈추기/시작</button>
+            <button class="btn" onclick="changeSpeed()">⚡ 속도 변경</button>
+            <button class="btn" onclick="addCat()">➕ 고양이 추가</button>
+        </div>
+
+        <div class="speed-info" id="speedInfo">현재 속도: 보통</div>
+    </div>
+
+    <div class="cat-message">고양이를 클릭하면 야옹! 🎶</div>
+
+    <script>
+        let isPaused = false;
+        let currentSpeed = 1;
+        const speedLevels = [
+            { name: '매우 느림', value: 3 },
+            { name: '느림', value: 2 },
+            { name: '보통', value: 1 },
+            { name: '빠름', value: 0.5 },
+            { name: '매우 빠름', value: 0.3 }
+        ];
+        let speedIndex = 2;
+
+        function meow(cat) {
+            // 음표 이펙트 생성
+            createMusicNotes(cat);
+
+            // 고양이 임시 확대
+            cat.style.transform = 'scale(1.5) rotate(360deg)';
+            setTimeout(() => {
+                cat.style.transform = '';
+            }, 300);
+
+            // 랜덤 소리 표시
+            const sounds = ['야옹!', '냐옹~', '미야옹!', '냥냥!', '미야~'];
+            const sound = sounds[Math.floor(Math.random() * sounds.length)];
+
+            const soundDiv = document.createElement('div');
+            soundDiv.textContent = sound;
+            soundDiv.style.position = 'fixed';
+            soundDiv.style.left = cat.getBoundingClientRect().left + 'px';
+            soundDiv.style.top = cat.getBoundingClientRect().top + 'px';
+            soundDiv.style.fontSize = '30px';
+            soundDiv.style.fontWeight = 'bold';
+            soundDiv.style.color = 'white';
+            soundDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+            soundDiv.style.pointerEvents = 'none';
+            soundDiv.style.zIndex = '1000';
+            document.body.appendChild(soundDiv);
+
+            setTimeout(() => {
+                soundDiv.style.transition = 'all 1s ease';
+                soundDiv.style.transform = 'translateY(-100px)';
+                soundDiv.style.opacity = '0';
+            }, 100);
+
+            setTimeout(() => {
+                document.body.removeChild(soundDiv);
+            }, 1100);
+        }
+
+        function createMusicNotes(cat) {
+            const notes = ['🎵', '🎶', '🎼', '♪', '♫'];
+            const rect = cat.getBoundingClientRect();
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const note = document.createElement('div');
+                    note.className = 'music-note';
+                    note.textContent = notes[Math.floor(Math.random() * notes.length)];
+                    note.style.left = (rect.left + Math.random() * 100) + 'px';
+                    note.style.top = rect.top + 'px';
+                    document.body.appendChild(note);
+
+                    setTimeout(() => {
+                        note.style.animation = 'floatUp 2s ease-out';
+                    }, 10);
+
+                    setTimeout(() => {
+                        document.body.removeChild(note);
+                    }, 2000);
+                }, i * 100);
+            }
+        }
+
+        function toggleDance() {
+            isPaused = !isPaused;
+            const container = document.getElementById('container');
+            if (isPaused) {
+                container.classList.add('paused');
+            } else {
+                container.classList.remove('paused');
+            }
+        }
+
+        function changeSpeed() {
+            speedIndex = (speedIndex + 1) % speedLevels.length;
+            currentSpeed = speedLevels[speedIndex].value;
+
+            const cats = document.querySelectorAll('.dancing-cat');
+            cats.forEach(cat => {
+                cat.style.animationDuration = currentSpeed + 's';
+            });
+
+            document.getElementById('speedInfo').textContent =
+                '현재 속도: ' + speedLevels[speedIndex].name;
+        }
+
+        function addCat() {
+            const danceFloor = document.querySelector('.dance-floor');
+            const newCat = document.createElement('div');
+            const catEmojis = ['😺', '😸', '😻', '😹', '😽', '🐱', '😼', '😿', '😾'];
+            const danceClasses = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5', 'cat6'];
+
+            newCat.className = 'dancing-cat ' + danceClasses[Math.floor(Math.random() * danceClasses.length)];
+            newCat.textContent = catEmojis[Math.floor(Math.random() * catEmojis.length)];
+            newCat.onclick = function() { meow(this); };
+            newCat.style.animationDuration = currentSpeed + 's';
+
+            danceFloor.appendChild(newCat);
+
+            // 추가 효과
+            newCat.style.transform = 'scale(0)';
+            setTimeout(() => {
+                newCat.style.transition = 'transform 0.5s ease';
+                newCat.style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        // 랜덤 음표 떨어뜨리기
+        setInterval(() => {
+            if (!isPaused) {
+                const note = document.createElement('div');
+                note.className = 'music-note';
+                note.textContent = ['🎵', '🎶'][Math.floor(Math.random() * 2)];
+                note.style.left = Math.random() * window.innerWidth + 'px';
+                note.style.top = '0px';
+                document.body.appendChild(note);
+
+                setTimeout(() => {
+                    note.style.animation = 'floatUp 3s linear';
+                }, 10);
+
+                setTimeout(() => {
+                    if (note.parentNode) {
+                        document.body.removeChild(note);
+                    }
+                }, 3000);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
