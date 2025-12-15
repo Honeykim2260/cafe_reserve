@@ -1,0 +1,69 @@
+# Docker Compose configuration for MyCafe development environment
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mycafe_user
+      POSTGRES_PASSWORD: mycafe_password
+      POSTGRES_DB: mycafe_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mycafe_user -d mycafe_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis (for caching and sessions)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Full Application (Frontend + Backend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    ports:
+      - "3000:3000"  # Frontend Vite dev server
+      - "3005:3005"  # Backend API server
+    environment:
+      NODE_ENV: development
+      USE_MOCK_DATA: "true"
+      DATABASE_URL: postgresql://mycafe_user:mycafe_password@db:5432/mycafe_db?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-development
+      JWT_EXPIRES_IN: 7d
+      PORT: 3005
+      VITE_API_URL: http://localhost:3005
+      VITE_APP_NAME: MyCafe
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/client/node_modules
+      - /app/server/node_modules
+      - /app/shared/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

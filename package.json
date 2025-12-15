@@ -1,0 +1,83 @@
+{
+  "name": "my-cafe-app",
+  "version": "1.0.0",
+  "description": "카페 좌석 예약 시스템",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "cd server && npm run test",
+    "test:client": "cd client && npm run test",
+    "test:watch": "concurrently \"npm run test:server:watch\" \"npm run test:client:watch\"",
+    "test:server:watch": "cd server && npm run test:watch",
+    "test:client:watch": "cd client && npm run test:watch",
+    "test:coverage": "npm run test:server:coverage && npm run test:client:coverage",
+    "test:server:coverage": "cd server && npm run test:coverage",
+    "test:client:coverage": "cd client && npm run test:coverage",
+    "test:e2e": "cd tests && npm run test:e2e",
+    "test:integration": "cd server && npm run test:integration",
+    "test:unit": "npm run test:server:unit && npm run test:client:unit",
+    "test:server:unit": "cd server && npm run test:unit",
+    "test:client:unit": "cd client && npm run test:unit",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "lint": "npm run lint:server && npm run lint:client",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "lint:fix": "npm run lint:server:fix && npm run lint:client:fix",
+    "lint:server:fix": "cd server && npm run lint:fix",
+    "lint:client:fix": "cd client && npm run lint:fix",
+    "type-check": "npm run type-check:server && npm run type-check:client",
+    "type-check:server": "cd server && npm run type-check",
+    "type-check:client": "cd client && npm run type-check",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ../shared && npm install",
+    "clean": "rm -rf node_modules server/node_modules client/node_modules shared/node_modules tests/node_modules",
+    "clean:build": "rm -rf server/dist client/dist shared/dist",
+    "clean:coverage": "rm -rf server/coverage client/coverage tests/coverage",
+    "clean:all": "npm run clean && npm run clean:build && npm run clean:coverage",
+    "db:generate": "cd server && npx prisma generate",
+    "db:migrate": "cd server && npx prisma migrate dev",
+    "db:migrate:reset": "cd server && npx prisma migrate reset",
+    "db:migrate:deploy": "cd server && npx prisma migrate deploy",
+    "db:seed": "cd server && npx prisma db seed",
+    "db:studio": "cd server && npx prisma studio",
+    "db:test:setup": "cd server && npm run db:test:setup",
+    "docker:dev": "docker-compose up -d",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up -d",
+    "docker:test": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit",
+    "ci": "npm run lint && npm run type-check && npm run test:all",
+    "precommit": "npm run lint:fix && npm run type-check && npm run test:unit"
+  },
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "keywords": [
+    "cafe",
+    "reservation",
+    "booking",
+    "react",
+    "typescript",
+    "express"
+  ],
+  "author": "MyCafe Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "prisma": "^6.15.0",
+    "tsx": "^4.20.5"
+  }
+}

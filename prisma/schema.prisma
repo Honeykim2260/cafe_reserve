@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../server/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  OWNER
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum SeatType {
+  INDIVIDUAL
+  COUPLE
+  GROUP
+  MEETING_ROOM
+}
+
+enum CancellationReason {
+  USER_REQUEST
+  CAFE_CLOSURE
+  EMERGENCY
+  SYSTEM_ERROR
+  PAYMENT_FAILED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  BANK_TRANSFER
+  MOBILE_PAY
+  POINTS
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  phone       String?
+  password    String
+  role        Role     @default(USER)
+  isActive    Boolean  @default(true)
+  profileImage String?
+  
+  // Relations
+  reservations Reservation[]
+  reviews      Review[]
+  ownedCafes   Cafe[]       @relation("CafeOwner")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Cafe {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  address       String
+  phone         String
+  email         String?
+  website       String?
+  images        String[]
+  
+  // Business hours
+  openTime      String    // "09:00" format
+  closeTime     String    // "22:00" format
+  isOpen        Boolean   @default(true)
+  
+  // Location
+  latitude      Float?
+  longitude     Float?
+  
+  // Pricing
+  basePrice     Int       // 기본 시간당 가격 (원)
+  
+  // Owner
+  ownerId       String
+  owner         User      @relation("CafeOwner", fields: [ownerId], references: [id])
+  
+  // Relations
+  seats         Seat[]
+  reservations  Reservation[]
+  reviews       Review[]
+  cancellationPolicy CancellationPolicy?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("cafes")
+}
+
+model Seat {
+  id            String      @id @default(uuid())
+  seatNumber    String      // "A1", "B2" 등
+  seatType      SeatType    @default(INDIVIDUAL)
+  capacity      Int         @default(1)
+  isAvailable   Boolean     @default(true)
+  priceMultiplier Float     @default(1.0) // 기본 가격 배수
+  
+  // Seat features
+  hasOutlet     Boolean     @default(false)
+  hasWindow     Boolean     @default(false)
+  isQuietZone   Boolean     @default(false)
+  
+  // Relations
+  cafeId        String
+  cafe          Cafe        @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  reservations  Reservation[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@unique([cafeId, seatNumber])
+  @@map("seats")
+}
+
+model Reservation {
+  id            String             @id @default(uuid())
+  
+  // Time slots
+  startTime     DateTime
+  endTime       DateTime
+  duration      Int                // 예약 시간(분)
+  
+  // Pricing
+  totalPrice    Int                // 총 결제 금액
+  
+  // Status
+  status        ReservationStatus  @default(PENDING)
+  
+  // Special requests
+  notes         String?
+  
+  // Cancellation info
+  cancelledAt   DateTime?
+  cancellationReason CancellationReason?
+  cancellationNote   String?
+  
+  // Relations
+  userId        String
+  user          User               @relation(fields: [userId], references: [id])
+  
+  cafeId        String
+  cafe          Cafe               @relation(fields: [cafeId], references: [id])
+  
+  seatId        String
+  seat          Seat               @relation(fields: [seatId], references: [id])
+  
+  // Payment and Refund
+  payment       Payment?
+  refund        Refund?
+  
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  
+  // 같은 좌석, 같은 시간대 중복 예약 방지
+  @@unique([seatId, startTime, endTime])
+  @@map("reservations")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int      // 1-5 점수
+  comment     String?
+  images      String[] // 리뷰 이미지들
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  cafeId      String
+  cafe        Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  
+  // 한 사용자가 한 카페에 하나의 리뷰만
+  @@unique([userId, cafeId])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("reviews")
+}
+
+// 카페별 취소 정책 설정
+model CancellationPolicy {
+  id              String @id @default(uuid())
+  
+  // 카페 정보
+  cafeId          String @unique
+  cafe            Cafe   @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  
+  // 무료 취소 기간 (시간 단위)
+  freecancellationHours Int @default(24) // 24시간 전까지 무료 취소
+  
+  // 취소 수수료 정책 (시간대별)
+  // 24시간 전: 무료
+  // 24시간 이내 ~ 2시간 전: 50%
+  // 2시간 이내: 100% (환불 불가)
+  
+  // 수수료율 설정 (백분율)
+  earlyRefundRate   Float @default(100.0) // 무료 취소 기간 내: 100% 환불
+  standardRefundRate Float @default(50.0)  // 일반 취소: 50% 환불
+  lateRefundRate    Float @default(0.0)    // 늦은 취소: 환불 불가
+  
+  // 늦은 취소로 간주되는 시간 (시간 전)
+  noRefundBeforeHours Int @default(2) // 2시간 전부터는 환불 불가
+  
+  // 정책 설명
+  description     String?
+  isActive        Boolean @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("cancellation_policies")
+}
+
+// 결제 정보
+model Payment {
+  id              String @id @default(uuid())
+  
+  // 예약 연결
+  reservationId   String @unique
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  
+  // 결제 정보
+  amount          Int           // 결제 금액
+  paymentMethod   PaymentMethod
+  paymentStatus   String        @default("pending") // "pending", "completed", "failed", "cancelled"
+  
+  // 외부 결제 서비스 정보
+  paymentGateway  String?       // "toss", "kakaopay", "naverpay" 등
+  transactionId   String?       // 결제 서비스의 거래 ID
+  receiptUrl      String?       // 영수증 URL
+  
+  // 결제 완료 시간
+  paidAt          DateTime?
+  
+  // 결제 실패 사유
+  failureReason   String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("payments")
+}
+
+// 환불 정보
+model Refund {
+  id              String @id @default(uuid())
+  
+  // 예약 연결
+  reservationId   String @unique
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  
+  // 환불 금액 정보
+  originalAmount  Int           // 원래 결제 금액
+  refundAmount    Int           // 실제 환불 금액
+  feeAmount       Int           // 취소 수수료
+  
+  // 환불 처리 정보
+  refundStatus    RefundStatus  @default(PENDING)
+  refundReason    String        // 환불 사유
+  
+  // 취소 수수료 계산 근거
+  hoursBeforeStart Int          // 시작 시간 몇 시간 전에 취소했는지
+  appliedFeeRate   Float        // 적용된 수수료율
+  
+  // 환불 처리 세부 정보
+  processedAt     DateTime?     // 환불 처리 완료 시간
+  refundMethod    PaymentMethod? // 환불 방법
+  refundTransactionId String?   // 환불 거래 ID
+  
+  // 실패 처리
+  failureReason   String?
+  retryCount      Int @default(0)
+  
+  // 관리자 메모
+  adminNote       String?
+  processedBy     String?       // 처리한 관리자 ID
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("refunds")
+}
+
+// 환불 처리 로그 (감사용)
+model RefundLog {
+  id            String @id @default(uuid())
+  
+  refundId      String
+  
+  // 상태 변경 정보
+  previousStatus RefundStatus?
+  newStatus     RefundStatus
+  
+  // 변경 사유
+  reason        String?
+  
+  // 처리자 정보
+  processedBy   String?       // 사용자 ID 또는 시스템
+  ipAddress     String?
+  userAgent     String?
+  
+  createdAt     DateTime @default(now())
+  
+  @@map("refund_logs")
+}
